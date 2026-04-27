@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useFileStore } from './hooks/useFileStore';
 import { DropZone } from './components/DropZone';
 import { TopBar } from './components/TopBar';
@@ -15,7 +16,24 @@ export default function App() {
     setFolderB,
     reset,
     navigate,
+    liveReload,
+    toggleLiveReload,
   } = useFileStore();
+
+  const [hoverMode, setHoverMode] = useState(true);
+  const [vertical, setVertical] = useState(false);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        setVertical(v => !v);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   const hasMatches = matches && matches.matched.length > 0;
   const currentPair = hasMatches ? matches.matched[currentIndex] : null;
@@ -28,9 +46,15 @@ export default function App() {
           folderB={folderB}
           matches={matches}
           onReset={reset}
+          hoverMode={hoverMode}
+          onHoverModeToggle={() => setHoverMode(m => !m)}
+          vertical={vertical}
+          onVerticalToggle={() => setVertical(v => !v)}
+          liveReload={liveReload}
+          onLiveReloadToggle={toggleLiveReload}
         />
         <div className="flex-1 overflow-hidden">
-          <CompareViewer pair={currentPair} />
+          <CompareViewer pair={currentPair} hoverMode={hoverMode} vertical={vertical} />
         </div>
         <NavigationRibbon
           matched={matches.matched}

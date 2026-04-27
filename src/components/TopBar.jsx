@@ -1,4 +1,17 @@
-export function TopBar({ folderA, folderB, matches, onReset }) {
+const hasFsApi = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+export function TopBar({
+  folderA,
+  folderB,
+  matches,
+  onReset,
+  hoverMode,
+  onHoverModeToggle,
+  vertical,
+  onVerticalToggle,
+  liveReload,
+  onLiveReloadToggle,
+}) {
   const matchedCount = matches?.matched?.length ?? 0;
   const unmatchedCount = (matches?.unmatchedA?.length ?? 0) + (matches?.unmatchedB?.length ?? 0);
 
@@ -23,12 +36,50 @@ export function TopBar({ folderA, folderB, matches, onReset }) {
           )}
         </div>
       </div>
-      <button
-        onClick={onReset}
-        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
-      >
-        Reset
-      </button>
+
+      <div className="flex items-center gap-2">
+        {/* Hover-mode toggle */}
+        <button
+          onClick={onHoverModeToggle}
+          title={hoverMode ? 'Switch to click mode' : 'Switch to hover mode'}
+          className={`px-3 py-1.5 text-white text-xs rounded-lg transition-colors ${
+            hoverMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-500'
+          }`}
+        >
+          {hoverMode ? '🖱️ Hover' : '✋ Click'}
+        </button>
+
+        {/* Axis toggle */}
+        <button
+          onClick={onVerticalToggle}
+          title={`Toggle axis (R) — currently ${vertical ? 'vertical' : 'horizontal'}`}
+          className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded-lg transition-colors"
+        >
+          {vertical ? '↕ Vertical' : '↔ Horizontal'}
+        </button>
+
+        {/* Live reload — only shown when the File System Access API is available */}
+        {hasFsApi && (
+          <button
+            onClick={onLiveReloadToggle}
+            title={liveReload ? 'Stop live reload' : 'Start live folder reload'}
+            className={`px-3 py-1.5 text-white text-xs rounded-lg transition-colors ${
+              liveReload
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-gray-700 hover:bg-gray-600'
+            }`}
+          >
+            {liveReload ? '🟢 Live' : '⚫ Live'}
+          </button>
+        )}
+
+        <button
+          onClick={onReset}
+          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
