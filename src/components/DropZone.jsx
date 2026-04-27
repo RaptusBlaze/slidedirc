@@ -32,7 +32,7 @@ export function DropZone({ label, folder, onDrop }) {
       {...getRootProps()}
       className={`relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${dragOverClass}`}
     >
-      <input {...getInputProps()} webkitdirectory="true" directory="true" multiple />
+      <input {...getInputProps()} webkitdirectory={true} multiple />
       {folder ? (
         <div className="text-center px-4">
           <div className="text-4xl mb-3">📁</div>
