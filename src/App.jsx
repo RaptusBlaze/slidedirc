@@ -21,14 +21,14 @@ export default function App() {
   } = useFileStore();
 
   const [hoverMode, setHoverMode] = useState(true);
-  const [vertical, setVertical] = useState(false);
+  const [axisMode, setAxisMode] = useState(0); // 0=L→R, 1=R→L, 2=T→B, 3=B→T
 
   useEffect(() => {
     const handleKey = (e) => {
       if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         const tag = document.activeElement?.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-        setVertical(v => !v);
+        setAxisMode(m => (m + 1) % 4);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -48,13 +48,13 @@ export default function App() {
           onReset={reset}
           hoverMode={hoverMode}
           onHoverModeToggle={() => setHoverMode(m => !m)}
-          vertical={vertical}
-          onVerticalToggle={() => setVertical(v => !v)}
+          axisMode={axisMode}
+          onAxisCycle={() => setAxisMode(m => (m + 1) % 4)}
           liveReload={liveReload}
           onLiveReloadToggle={toggleLiveReload}
         />
         <div className="flex-1 overflow-hidden">
-          <CompareViewer pair={currentPair} hoverMode={hoverMode} vertical={vertical} />
+          <CompareViewer pair={currentPair} hoverMode={hoverMode} axisMode={axisMode} />
         </div>
         <NavigationRibbon
           matched={matches.matched}
