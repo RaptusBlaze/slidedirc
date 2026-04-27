@@ -18,22 +18,20 @@ export function useFileStore() {
   }, [folderA, folderB]);
 
   const setFolderA = useCallback((name, files) => {
-    setFolderAState(prev => {
-      if (prev) prev.files.forEach(f => URL.revokeObjectURL(f.url));
-      return { name, files };
-    });
+    setFolderAState(prev => { revokeFolder(prev); return { name, files }; });
   }, []);
 
   const setFolderB = useCallback((name, files) => {
-    setFolderBState(prev => {
-      if (prev) prev.files.forEach(f => URL.revokeObjectURL(f.url));
-      return { name, files };
-    });
+    setFolderBState(prev => { revokeFolder(prev); return { name, files }; });
   }, []);
 
+  const revokeFolder = (folder) => {
+    if (folder) folder.files.forEach(f => URL.revokeObjectURL(f.url));
+  };
+
   const reset = useCallback(() => {
-    setFolderAState(prev => { if (prev) prev.files.forEach(f => URL.revokeObjectURL(f.url)); return null; });
-    setFolderBState(prev => { if (prev) prev.files.forEach(f => URL.revokeObjectURL(f.url)); return null; });
+    setFolderAState(prev => { revokeFolder(prev); return null; });
+    setFolderBState(prev => { revokeFolder(prev); return null; });
     setMatches(null);
     setCurrentIndex(0);
   }, []);
