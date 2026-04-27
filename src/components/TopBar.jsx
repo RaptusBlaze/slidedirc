@@ -1,5 +1,7 @@
 const hasFsApi = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
+const AXIS_LABELS = ['↔ L→R', '↔ R→L', '↕ T→B', '↕ B→T'];
+
 export function TopBar({
   folderA,
   folderB,
@@ -7,8 +9,8 @@ export function TopBar({
   onReset,
   hoverMode,
   onHoverModeToggle,
-  vertical,
-  onVerticalToggle,
+  axisMode,
+  onAxisCycle,
   liveReload,
   onLiveReloadToggle,
 }) {
@@ -49,13 +51,13 @@ export function TopBar({
           {hoverMode ? '🖱️ Hover' : '✋ Click'}
         </button>
 
-        {/* Axis toggle */}
+        {/* Axis cycle */}
         <button
-          onClick={onVerticalToggle}
-          title={`Toggle axis (R) — currently ${vertical ? 'vertical' : 'horizontal'}`}
+          onClick={onAxisCycle}
+          title={`Cycle axis (R) — currently ${AXIS_LABELS[axisMode]}`}
           className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded-lg transition-colors"
         >
-          {vertical ? '↕ Vertical' : '↔ Horizontal'}
+          {AXIS_LABELS[axisMode]}
         </button>
 
         {/* Live reload — only shown when the File System Access API is available */}
