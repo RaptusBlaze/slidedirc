@@ -1,8 +1,29 @@
-# React + Vite
+# Image Compare Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Vite web app for comparing original and edited image folders side by side.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Folder drop zones** — drag and drop two image folders (original and edited)
+- **Fuzzy filename matching** — pairs images by exact name, base name, or similarity (≥ 60%) using `string-similarity`
+- **Slider compare view** — drag a handle to reveal original vs edited using `react-compare-slider`
+- **Thumbnail ribbon** — scroll through matched pairs; navigate with ← → arrow keys
+- **Unmatched files panel** — lists any files that couldn't be paired
+- **Dark UI** — Tailwind CSS v3 dark theme
+
+## Stack
+
+- React 18 + Vite
+- react-compare-slider
+- react-dropzone
+- string-similarity
+- Tailwind CSS v3
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173), drop your original folder on the left zone and edited folder on the right, then use the slider to compare.
