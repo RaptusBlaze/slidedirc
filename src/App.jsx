@@ -5,6 +5,7 @@ import { TopBar } from './components/TopBar';
 import { CompareViewer } from './components/CompareViewer';
 import { NavigationRibbon } from './components/NavigationRibbon';
 import { UnmatchedPanel } from './components/UnmatchedPanel';
+import { HelpOverlay } from './components/HelpOverlay';
 
 export default function App() {
   const {
@@ -21,14 +22,19 @@ export default function App() {
   } = useFileStore();
 
   const [hoverMode, setHoverMode] = useState(true);
-  const [axisMode, setAxisMode] = useState(0); // 0=L→R, 1=R→L, 2=T→B, 3=B→T
+  const [axisMode, setAxisMode] = useState(0); // 0=L→R, 1=T→B, 2=R→L, 3=B→T (clockwise)
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const handleKey = (e) => {
-      if ((e.key === 'r' || e.key === 'R') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const tag = document.activeElement?.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'r' || e.key === 'R') {
         setAxisMode(m => (m + 1) % 4);
+      }
+      if (e.key === '?') {
+        setShowHelp(h => !h);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -52,6 +58,7 @@ export default function App() {
           onAxisCycle={() => setAxisMode(m => (m + 1) % 4)}
           liveReload={liveReload}
           onLiveReloadToggle={toggleLiveReload}
+          onHelpToggle={() => setShowHelp(h => !h)}
         />
         <div className="flex-1 overflow-hidden">
           <CompareViewer pair={currentPair} hoverMode={hoverMode} axisMode={axisMode} />
@@ -65,6 +72,7 @@ export default function App() {
           unmatchedA={matches.unmatchedA}
           unmatchedB={matches.unmatchedB}
         />
+        {showHelp && <HelpOverlay onClose={() => setShowHelp(false)} />}
       </div>
     );
   }

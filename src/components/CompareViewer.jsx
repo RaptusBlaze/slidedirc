@@ -1,23 +1,26 @@
-import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
+import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle } from 'react-compare-slider';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-// axisMode: 0 = L→R, 1 = R→L, 2 = T→B, 3 = B→T
+// axisMode (clockwise): 0=L→R, 1=T→B, 2=R→L, 3=B→T
 export function CompareViewer({ pair, hoverMode, axisMode }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [spaceActive, setSpaceActive] = useState(false);
 
   const containerRef = useRef(null);
   const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
-  // Refs so event handlers always access the latest state without re-registering
+  // Refs so event handlers always see latest values without re-registering
   const draggingRef = useRef(false);
+  const spaceRef = useRef(false);
   const zoomRef = useRef(zoom);
   const panRef = useRef(pan);
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   useEffect(() => { panRef.current = pan; }, [pan]);
 
-  const portrait = axisMode >= 2;
-  const reversed = axisMode % 2 === 1;
+  // Clockwise axis: 0=L→R, 1=T→B, 2=R→L, 3=B→T
+  const portrait = axisMode % 2 === 1;
+  const reversed = axisMode >= 2;
 
   // Reset zoom and pan on every pair change
   useEffect(() => {
@@ -31,7 +34,7 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     const container = containerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    const sx = e.clientX - rect.left; // cursor relative to container
+    const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
 
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
@@ -44,7 +47,6 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
       return;
     }
 
-    // Keep the content point under the cursor stationary
     const scale = newZoom / prevZoom;
     const prevPan = panRef.current;
     setZoom(newZoom);
@@ -54,8 +56,9 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     });
   }, []);
 
+  // Pan via Space + drag — spacebar hold activates pan mode to avoid fighting the slider
   const handleMouseDown = useCallback((e) => {
-    if (zoomRef.current <= 1) return;
+    if (!spaceRef.current || zoomRef.current <= 1) return;
     e.preventDefault();
     draggingRef.current = true;
     setDragging(true);
@@ -77,6 +80,33 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
   const handleMouseUp = useCallback(() => {
     draggingRef.current = false;
     setDragging(false);
+  }, []);
+
+  // Spacebar: activates pan mode; prevent page scroll while held
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.code !== 'Space') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+      if (!spaceRef.current) {
+        e.preventDefault();
+        spaceRef.current = true;
+        setSpaceActive(true);
+      }
+    };
+    const onKeyUp = (e) => {
+      if (e.code !== 'Space') return;
+      spaceRef.current = false;
+      setSpaceActive(false);
+      draggingRef.current = false;
+      setDragging(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
   }, []);
 
   useEffect(() => {
@@ -115,20 +145,29 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     />
   );
 
-  // Labels: left/top slot label and right/bottom slot label depend on reversed mode
   const slotALabel = reversed ? 'Edited' : 'Original';
   const slotBLabel = reversed ? 'Original' : 'Edited';
-  // slotB label position: bottom-left for portrait, top-right for landscape
   const slotBClass = `absolute ${portrait ? 'bottom-3 left-3' : 'top-3 right-3'} bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none`;
+
+  // Cursor: grabbing while dragging with space, grab while space held + zoomed, default otherwise
+  const cursor = dragging ? 'grabbing' : (spaceActive && zoom > 1 ? 'grab' : 'default');
+
+  // Minimal handle: just the divider line, no thumb button
+  const sliderHandle = (
+    <ReactCompareSliderHandle
+      buttonStyle={{ display: 'none' }}
+      linesStyle={{ width: 2, opacity: 0.8 }}
+    />
+  );
 
   return (
     <div
       ref={containerRef}
       className="relative w-full h-full overflow-hidden"
-      style={{ cursor: zoom > 1 ? (dragging ? 'grabbing' : 'grab') : 'default' }}
+      style={{ cursor }}
       onMouseDown={handleMouseDown}
     >
-      {/* Scaled / panned layer — labels are intentionally kept outside so they don't move */}
+      {/* Scaled / panned layer — labels are intentionally outside so they don't zoom/move */}
       <div
         style={{
           width: '100%',
@@ -139,11 +178,11 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
         }}
       >
         <ReactCompareSlider
-          // Remount on every mode change to reset slider position to 50%
           key={axisMode}
           changePositionOnHover={hoverMode}
           portrait={portrait}
           keyboardIncrement="0%"
+          handle={sliderHandle}
           style={{ width: '100%', height: '100%' }}
           itemOne={reversed ? editedImg : originalImg}
           itemTwo={reversed ? originalImg : editedImg}
@@ -158,9 +197,18 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
         {slotBLabel}
       </div>
 
+      {/* Zoom badge */}
       {zoom !== 1 && (
         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded pointer-events-none select-none">
           {Math.round(zoom * 100)}%
+          {spaceActive && <span className="ml-1 opacity-70">· pan</span>}
+        </div>
+      )}
+
+      {/* Space-pan hint when zoomed but space not yet held */}
+      {zoom > 1 && !spaceActive && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
+          Hold <kbd className="bg-gray-700 px-1 rounded">Space</kbd> + drag to pan
         </div>
       )}
     </div>
