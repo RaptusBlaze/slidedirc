@@ -5,16 +5,14 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 export function CompareViewer({ pair, hoverMode, axisMode }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
   const [spaceActive, setSpaceActive] = useState(false);
 
   const containerRef = useRef(null);
-  const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   // Refs so event handlers always see latest values without re-registering
-  const draggingRef = useRef(false);
   const spaceRef = useRef(false);
   const zoomRef = useRef(zoom);
   const panRef = useRef(pan);
+  const lastMousePos = useRef(null);
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   useEffect(() => { panRef.current = pan; }, [pan]);
 
@@ -57,76 +55,47 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     });
   }, []);
 
-  // Pan via Space + drag.
-  // Registered in capture phase so the slider child cannot intercept the mousedown.
-  const handleMouseDown = useCallback((e) => {
-    if (!spaceRef.current || zoomRef.current <= 1) return;
-    e.preventDefault();
-    e.stopPropagation(); // prevent slider from also starting a drag
-    draggingRef.current = true;
-    setDragging(true);
-    dragStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-      panX: panRef.current.x,
-      panY: panRef.current.y,
-    };
-  }, []);
-
+  // Pan via Space toggle + mouse movement (GIMP-style: no click needed).
   const handleMouseMove = useCallback((e) => {
-    if (!draggingRef.current) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-    setPan({ x: dragStart.current.panX + dx, y: dragStart.current.panY + dy });
+    if (!spaceRef.current || zoomRef.current <= 1) return;
+    if (lastMousePos.current === null) {
+      lastMousePos.current = { x: e.clientX, y: e.clientY };
+      return;
+    }
+    const dx = e.clientX - lastMousePos.current.x;
+    const dy = e.clientY - lastMousePos.current.y;
+    lastMousePos.current = { x: e.clientX, y: e.clientY };
+    setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
   }, []);
 
-  const handleMouseUp = useCallback(() => {
-    draggingRef.current = false;
-    setDragging(false);
-  }, []);
-
-  // Spacebar: activates pan mode; prevent page scroll while held
+  // Spacebar: toggles pan mode on each press (GIMP-style).
+  // Prevent page scroll while pan mode is active.
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (e.code !== 'Space') return;
+      if (e.code !== 'Space' || e.repeat) return;
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
-      if (!spaceRef.current) {
-        e.preventDefault();
-        spaceRef.current = true;
-        setSpaceActive(true);
-      }
-    };
-    const onKeyUp = (e) => {
-      if (e.code !== 'Space') return;
-      spaceRef.current = false;
-      setSpaceActive(false);
-      draggingRef.current = false;
-      setDragging(false);
+      e.preventDefault();
+      const next = !spaceRef.current;
+      spaceRef.current = next;
+      setSpaceActive(next);
+      // Reset tracked position when entering pan mode so first move anchors correctly
+      if (next) lastMousePos.current = null;
     };
     window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-    };
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     el.addEventListener('wheel', handleWheel, { passive: false });
-    // Capture phase: fires before the slider child's own mousedown handler
-    el.addEventListener('mousedown', handleMouseDown, { capture: true });
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
     return () => {
       el.removeEventListener('wheel', handleWheel);
-      el.removeEventListener('mousedown', handleMouseDown, { capture: true });
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
+  }, [handleWheel, handleMouseMove]);
 
   if (!pair) {
     return (
@@ -155,8 +124,8 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
   const slotBLabel = reversed ? 'Original' : 'Edited';
   const slotBClass = `absolute ${portrait ? 'bottom-3 left-3' : 'top-3 right-3'} bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none`;
 
-  // Cursor: grabbing while dragging with space, grab while space held + zoomed, default otherwise
-  const cursor = dragging ? 'grabbing' : (spaceActive && zoom > 1 ? 'grab' : 'default');
+  // Cursor: crosshair-grab while pan mode active + zoomed, default otherwise
+  const cursor = spaceActive && zoom > 1 ? 'grab' : 'default';
 
   // Minimal handle: just the divider line, no thumb button
   const sliderHandle = (
@@ -213,7 +182,12 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
       {/* Hints when zoomed */}
       {zoom > 1 && !spaceActive && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
-          Hold <kbd className="bg-gray-700 px-1 rounded">Space</kbd> + drag to pan
+          Press <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to toggle pan mode
+        </div>
+      )}
+      {zoom > 1 && spaceActive && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
+          Pan mode — move mouse to pan · Press <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to exit
         </div>
       )}
     </div>
