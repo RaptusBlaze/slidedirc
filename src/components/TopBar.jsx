@@ -1,6 +1,7 @@
 const hasFsApi = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
-const AXIS_LABELS = ['↔ L→R', '↔ R→L', '↕ T→B', '↕ B→T'];
+// Clockwise: L→R → T→B → R→L → B→T
+const AXIS_LABELS = ['↔ L→R', '↕ T→B', '↔ R→L', '↕ B→T'];
 
 export function TopBar({
   folderA,
@@ -13,6 +14,7 @@ export function TopBar({
   onAxisCycle,
   liveReload,
   onLiveReloadToggle,
+  onHelpToggle,
 }) {
   const matchedCount = matches?.matched?.length ?? 0;
   const unmatchedCount = (matches?.unmatchedA?.length ?? 0) + (matches?.unmatchedB?.length ?? 0);
@@ -80,6 +82,15 @@ export function TopBar({
           className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
         >
           Reset
+        </button>
+
+        {/* Help */}
+        <button
+          onClick={onHelpToggle}
+          title="Keyboard shortcuts (?)"
+          className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded-lg transition-colors font-bold"
+        >
+          ?
         </button>
       </div>
     </div>
