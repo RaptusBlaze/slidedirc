@@ -25,6 +25,9 @@ export default function App() {
   const [axisMode, setAxisMode] = useState(0); // 0=L→R, 1=T→B, 2=R→L, 3=B→T (clockwise)
   const [showHelp, setShowHelp] = useState(false);
 
+  const hasMatches = matches && matches.matched.length > 0;
+  const currentPair = hasMatches ? matches.matched[currentIndex] : null;
+
   useEffect(() => {
     const handleKey = (e) => {
       const tag = document.activeElement?.tagName;
@@ -53,9 +56,6 @@ export default function App() {
     window.addEventListener('wheel', handleWheel, { passive: false });
     return () => window.removeEventListener('wheel', handleWheel);
   }, [hasMatches, navigate]);
-
-  const hasMatches = matches && matches.matched.length > 0;
-  const currentPair = hasMatches ? matches.matched[currentIndex] : null;
 
   if (hasMatches) {
     return (
