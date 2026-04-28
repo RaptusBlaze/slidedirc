@@ -41,6 +41,19 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
+  // Plain scroll (no Ctrl) navigates images; Ctrl+scroll is handled by CompareViewer for zoom
+  useEffect(() => {
+    if (!hasMatches) return;
+    const handleWheel = (e) => {
+      if (e.ctrlKey) return;
+      e.preventDefault();
+      if (e.deltaY > 0) navigate(1);
+      else navigate(-1);
+    };
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [hasMatches, navigate]);
+
   const hasMatches = matches && matches.matched.length > 0;
   const currentPair = hasMatches ? matches.matched[currentIndex] : null;
 

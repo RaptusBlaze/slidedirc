@@ -28,8 +28,9 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     setPan({ x: 0, y: 0 });
   }, [pair]);
 
-  // Wheel: zoom toward the cursor position using transform-origin 0 0 math
+  // Wheel: Ctrl+scroll zooms toward cursor; plain scroll is left for image navigation (App.jsx)
   const handleWheel = useCallback((e) => {
+    if (!e.ctrlKey) return; // plain scroll handled by App for image navigation
     e.preventDefault();
     const container = containerRef.current;
     if (!container) return;
@@ -56,10 +57,12 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     });
   }, []);
 
-  // Pan via Space + drag — spacebar hold activates pan mode to avoid fighting the slider
+  // Pan via Space + drag.
+  // Registered in capture phase so the slider child cannot intercept the mousedown.
   const handleMouseDown = useCallback((e) => {
     if (!spaceRef.current || zoomRef.current <= 1) return;
     e.preventDefault();
+    e.stopPropagation(); // prevent slider from also starting a drag
     draggingRef.current = true;
     setDragging(true);
     dragStart.current = {
@@ -113,14 +116,17 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     const el = containerRef.current;
     if (!el) return;
     el.addEventListener('wheel', handleWheel, { passive: false });
+    // Capture phase: fires before the slider child's own mousedown handler
+    el.addEventListener('mousedown', handleMouseDown, { capture: true });
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
     return () => {
       el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('mousedown', handleMouseDown, { capture: true });
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [handleWheel, handleMouseMove, handleMouseUp]);
+  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
 
   if (!pair) {
     return (
@@ -165,7 +171,6 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
       ref={containerRef}
       className="relative w-full h-full overflow-hidden"
       style={{ cursor }}
-      onMouseDown={handleMouseDown}
     >
       {/* Scaled / panned layer — labels are intentionally outside so they don't zoom/move */}
       <div
@@ -205,7 +210,7 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
         </div>
       )}
 
-      {/* Space-pan hint when zoomed but space not yet held */}
+      {/* Hints when zoomed */}
       {zoom > 1 && !spaceActive && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
           Hold <kbd className="bg-gray-700 px-1 rounded">Space</kbd> + drag to pan
