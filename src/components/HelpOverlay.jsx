@@ -4,7 +4,7 @@ export function HelpOverlay({ onClose }) {
     { key: 'Scroll', desc: 'Navigate to previous / next image' },
     { key: 'Ctrl + Scroll', desc: 'Zoom in / out (toward cursor)' },
     { key: 'R', desc: 'Cycle axis clockwise (L→R → T→B → R→L → B→T)' },
-    { key: 'Space + drag', desc: 'Pan the view when zoomed in' },
+    { key: 'Space', desc: 'Toggle pan mode (move mouse to pan when zoomed in)' },
     { key: '?', desc: 'Toggle this help screen' },
   ];
 
