@@ -1,8 +1,9 @@
 export function HelpOverlay({ onClose }) {
   const rows = [
     { key: '← / →', desc: 'Previous / next image' },
+    { key: 'Scroll', desc: 'Navigate to previous / next image' },
+    { key: 'Ctrl + Scroll', desc: 'Zoom in / out (toward cursor)' },
     { key: 'R', desc: 'Cycle axis clockwise (L→R → T→B → R→L → B→T)' },
-    { key: 'Scroll', desc: 'Zoom in / out (toward cursor)' },
     { key: 'Space + drag', desc: 'Pan the view when zoomed in' },
     { key: '?', desc: 'Toggle this help screen' },
   ];
