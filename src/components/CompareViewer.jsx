@@ -68,22 +68,62 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
     setPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
   }, []);
 
-  // Spacebar: toggles pan mode on each press (GIMP-style).
-  // Prevent page scroll while pan mode is active.
+  // Spacebar: hybrid toggle/hold.
+  // Short press (<300 ms): toggles pan mode on/off.
+  // Hold (≥300 ms): pan mode active while held, exits automatically on key up.
   useEffect(() => {
+    // How long (ms) distinguishes a "tap" from a "hold"
+    const HOLD_THRESHOLD = 300;
+    let pressedAt = null;
+    // Was pan already active via a toggle before the current keydown?
+    let toggledOn = false;
+
     const onKeyDown = (e) => {
       if (e.code !== 'Space' || e.repeat) return;
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
       e.preventDefault();
-      const next = !spaceRef.current;
-      spaceRef.current = next;
-      setSpaceActive(next);
-      // Reset tracked position when entering pan mode so first move anchors correctly
-      if (next) lastMousePos.current = null;
+      pressedAt = Date.now();
+      // Activate pan if not already active; if already toggled on just record the press time
+      if (!spaceRef.current) {
+        spaceRef.current = true;
+        setSpaceActive(true);
+        lastMousePos.current = null;
+        toggledOn = false;
+      } else {
+        // Pan already on via toggle; record that fact so keyup can toggle it off on short press
+        toggledOn = true;
+      }
     };
+
+    const onKeyUp = (e) => {
+      if (e.code !== 'Space' || pressedAt === null) return;
+      const duration = Date.now() - pressedAt;
+      pressedAt = null;
+
+      if (duration < HOLD_THRESHOLD) {
+        // Short tap: toggle behaviour
+        if (toggledOn) {
+          // Was already toggled on — toggle off
+          spaceRef.current = false;
+          setSpaceActive(false);
+          toggledOn = false;
+        }
+        // else: was just activated — keep it on (toggledOn stays false until next press)
+      } else {
+        // Hold: always exit pan mode on release
+        spaceRef.current = false;
+        setSpaceActive(false);
+        toggledOn = false;
+      }
+    };
+
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
   }, []);
 
   useEffect(() => {
@@ -182,12 +222,12 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
       {/* Hints when zoomed */}
       {zoom > 1 && !spaceActive && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
-          Press <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to toggle pan mode
+          Tap <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to toggle pan · Hold to pan while pressed
         </div>
       )}
       {zoom > 1 && spaceActive && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-gray-300 text-xs px-2 py-1 rounded pointer-events-none select-none">
-          Pan mode — move mouse to pan · Press <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to exit
+          Pan mode — move mouse to pan · Tap <kbd className="bg-gray-700 px-1 rounded">Space</kbd> to exit
         </div>
       )}
     </div>
