@@ -2,6 +2,12 @@
 
 A React + Vite web app for comparing original and edited image folders side by side.
 
+## Motivation
+
+When working with local AI image models in [ComfyUI](https://github.com/comfyanonymous/ComfyUI), the **Image Compare** node quickly became an indispensable part of my inpainting and editing workflow — nothing beats a live slider to judge whether an edit actually improved things.
+
+The problem: once I'm done in ComfyUI I had no comfortable way to revisit those before/after comparisons for a whole batch of images. This tool fills exactly that gap. Drop in your original and edited folders, and you get the same familiar slider view for every matched pair — outside of ComfyUI, in the browser, whenever you need it.
+
 ## Features
 
 - **Folder drop zones** — drag and drop two image folders (original and edited)
@@ -13,11 +19,11 @@ A React + Vite web app for comparing original and edited image folders side by s
 
 ## Stack
 
-- React 18 + Vite
-- react-compare-slider
-- react-dropzone
-- string-similarity
-- Tailwind CSS v3
+- [React](https://github.com/facebook/react) 18 + [Vite](https://github.com/vitejs/vite)
+- [react-compare-slider](https://github.com/nerdyman/react-compare-slider)
+- [react-dropzone](https://github.com/react-dropzone/react-dropzone)
+- [string-similarity](https://github.com/aceakash/string-similarity)
+- [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) v3
 
 ## Getting Started
 
