@@ -12,7 +12,7 @@ async function getNewFiles(handle, existingFiles) {
     try {
       const file = await entry.getFile();
       if (file.type.startsWith('image/') || IMAGE_RE.test(name)) {
-        results.push({ name, url: URL.createObjectURL(file) });
+        results.push({ name, url: URL.createObjectURL(file), lastModified: file.lastModified });
       }
     } catch {
       // skip files that can't be read

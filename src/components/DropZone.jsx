@@ -10,6 +10,7 @@ export function DropZone({ label, folder, onDrop }) {
       const files = imageFiles.map(f => ({
         name: f.name,
         url: URL.createObjectURL(f),
+        lastModified: f.lastModified,
       }));
       const folderName = imageFiles[0].webkitRelativePath
         ? imageFiles[0].webkitRelativePath.split('/')[0]

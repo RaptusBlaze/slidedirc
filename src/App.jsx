@@ -61,8 +61,7 @@ export default function App() {
     return (
       <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">
         <TopBar
-          folderA={folderA}
-          folderB={folderB}
+          currentPair={currentPair}
           matches={matches}
           onReset={reset}
           hoverMode={hoverMode}
