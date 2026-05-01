@@ -1,0 +1,8 @@
+
+> slidedirc@0.0.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+····
+  4 passed (14.9s)

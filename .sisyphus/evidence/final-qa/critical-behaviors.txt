@@ -1,0 +1,212 @@
+CRITICAL BEHAVIORS VERIFICATION — Final QA
+Date: 2026-05-01
+Commit: 1c631d0 (chore(deploy): upgrade node runtime to 22 in docker and ci)
+
+=============================================================================
+BEHAVIOR 1: Blob-URL lifecycle (revokeFolder pattern)
+=============================================================================
+FILE: src/hooks/useFileStore.js
+
+VERIFIED PATTERN (lines 24-26, 56-76):
+  function revokeFolder(folder) {
+    if (folder) folder.files.forEach(f => URL.revokeObjectURL(f.url));
+  }
+
+  const setFolderA = useCallback((name, files) => {
+    setFolderAState(prev => { revokeFolder(prev); return { name, files }; });
+    ...
+  }, []);
+
+  const setFolderB = useCallback((name, files) => {
+    setFolderBState(prev => { revokeFolder(prev); return { name, files }; });
+    ...
+  }, []);
+
+  const reset = useCallback(() => {
+    setFolderAState(prev => { revokeFolder(prev); return null; });
+    setFolderBState(prev => { revokeFolder(prev); return null; });
+    ...
+  }, []);
+
+STATUS: ✅ VERIFIED — revokeFolder(prev) called before every folder state replacement.
+
+=============================================================================
+BEHAVIOR 2: cancelled-flag in TopBar (no setState-on-unmount)
+=============================================================================
+FILE: src/components/TopBar.jsx
+
+VERIFIED PATTERN (lines 70-90):
+  useEffect(() => {
+    setOrigDims(null);
+    if (!original?.url) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => { if (!cancelled) setOrigDims({ w: img.naturalWidth, h: img.naturalHeight }); };
+    img.onerror = () => { if (!cancelled) setOrigDims(null); };
+    img.src = original.url;
+    return () => { cancelled = true; };
+  }, [original?.url]);
+
+  useEffect(() => {
+    setEditDims(null);
+    if (!edited?.url) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => { if (!cancelled) setEditDims({ w: img.naturalWidth, h: img.naturalHeight }); };
+    img.onerror = () => { if (!cancelled) setEditDims(null); };
+    img.src = edited.url;
+    return () => { cancelled = true; };
+  }, [edited?.url]);
+
+STATUS: ✅ VERIFIED — Both image load effects use `let cancelled = false` with cleanup `() => { cancelled = true; }`.
+
+=============================================================================
+BEHAVIOR 3: folderARef/folderBRef polling (no duplicate entries)
+=============================================================================
+FILE: src/hooks/useFileStore.js
+
+VERIFIED PATTERN (lines 37-41, 122-144):
+  // Refs so the polling closure always sees the latest folder files
+  const folderARef = useRef(folderA);
+  const folderBRef = useRef(folderB);
+  useEffect(() => { folderARef.current = folderA; }, [folderA]);
+  useEffect(() => { folderBRef.current = folderB; }, [folderB]);
+
+  // Polling effect — runs every 3 s while live reload is active
+  useEffect(() => {
+    if (!liveReload || !dirHandleA || !dirHandleB) return;
+    const poll = async () => {
+      try {
+        const [newA, newB] = await Promise.all([
+          getNewFiles(dirHandleA, folderARef.current?.files),  // ← uses ref, not state
+          getNewFiles(dirHandleB, folderBRef.current?.files),  // ← uses ref, not state
+        ]);
+        ...
+      }
+    };
+    const id = setInterval(poll, 3000);
+    return () => clearInterval(id);
+  }, [liveReload, dirHandleA, dirHandleB]);  // ← folderA/B NOT in deps
+
+STATUS: ✅ VERIFIED — Polling closure uses folderARef.current/folderBRef.current, not state directly.
+  folderA/folderB are NOT in the polling effect's dependency array.
+
+=============================================================================
+BEHAVIOR 4: key={axisMode} remount on ReactCompareSlider
+=============================================================================
+FILE: src/components/CompareViewer.jsx
+
+VERIFIED PATTERN (line 194-195):
+  <ReactCompareSlider
+    key={axisMode}
+    changePositionOnHover={hoverMode}
+    portrait={portrait}
+    keyboardIncrement="0%"
+    ...
+  />
+
+STATUS: ✅ VERIFIED — key={axisMode} present on ReactCompareSlider, forces remount on axis change.
+
+=============================================================================
+BEHAVIOR 5: transformOrigin '0 0' on zoom layer
+=============================================================================
+FILE: src/components/CompareViewer.jsx
+
+VERIFIED PATTERN (lines 185-192):
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+      transformOrigin: '0 0',
+      willChange: 'transform',
+    }}
+  >
+
+STATUS: ✅ VERIFIED — transformOrigin: '0 0' intact on zoom/pan layer.
+
+=============================================================================
+BEHAVIOR 6: Spacebar tap-vs-hold hybrid logic
+=============================================================================
+FILE: src/components/CompareViewer.jsx
+
+VERIFIED PATTERN (lines 71-127):
+  // Spacebar: hybrid toggle/hold.
+  // Short press (<300 ms): toggles pan mode on/off.
+  // Hold (≥300 ms): pan mode active while held, exits automatically on key up.
+  useEffect(() => {
+    const HOLD_THRESHOLD = 300;
+    let pressedAt = null;
+    let toggledOn = false;
+
+    const onKeyDown = (e) => {
+      if (e.code !== 'Space' || e.repeat) return;
+      ...
+      pressedAt = Date.now();
+      if (!spaceRef.current) {
+        spaceRef.current = true;
+        setSpaceActive(true);
+        lastMousePos.current = null;
+        toggledOn = false;
+      } else {
+        toggledOn = true;  // already toggled on
+      }
+    };
+
+    const onKeyUp = (e) => {
+      if (e.code !== 'Space' || pressedAt === null) return;
+      const duration = Date.now() - pressedAt;
+      pressedAt = null;
+
+      if (duration < HOLD_THRESHOLD) {
+        // Short tap: toggle behaviour
+        if (toggledOn) {
+          spaceRef.current = false;
+          setSpaceActive(false);
+          toggledOn = false;
+        }
+        // else: was just activated — keep it on
+      } else {
+        // Hold: always exit pan mode on release
+        spaceRef.current = false;
+        setSpaceActive(false);
+        toggledOn = false;
+      }
+    };
+    ...
+  }, []);
+
+STATUS: ✅ VERIFIED — Full hybrid tap-toggle (<300ms) vs hold-and-release (≥300ms) logic intact.
+
+=============================================================================
+BEHAVIOR 7: Wheel routing (plain scroll = nav, Ctrl+scroll = zoom)
+=============================================================================
+FILE: src/App.jsx (lines 47-58) + src/components/CompareViewer.jsx (lines 29-56)
+
+VERIFIED PATTERN in App.jsx:
+  // Plain scroll (no Ctrl) navigates images; Ctrl+scroll is handled by CompareViewer for zoom
+  useEffect(() => {
+    if (!hasMatches) return;
+    const handleWheel = (e) => {
+      if (e.ctrlKey) return;  // ← Ctrl+scroll passes through to CompareViewer
+      e.preventDefault();
+      if (e.deltaY > 0) navigate(1);
+      else navigate(-1);
+    };
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [hasMatches, navigate]);
+
+VERIFIED PATTERN in CompareViewer.jsx:
+  const handleWheel = useCallback((e) => {
+    if (!e.ctrlKey) return; // plain scroll handled by App for image navigation
+    e.preventDefault();
+    ...zoom logic...
+  }, []);
+
+STATUS: ✅ VERIFIED — Two separate wheel handlers: App handles plain scroll (nav), CompareViewer handles Ctrl+scroll (zoom).
+  Both use { passive: false } with intentional preventDefault().
+
+=============================================================================
+SUMMARY: 7/7 CRITICAL BEHAVIORS VERIFIED ✅
+=============================================================================

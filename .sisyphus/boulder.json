@@ -1,0 +1,85 @@
+{
+  "active_plan": "/home/hies/.local/share/opencode/worktree/d3d3dbd3c3763a1e02e8084eff64989a7402fb81/nimble-knight/.sisyphus/plans/dependency-migration.md",
+  "started_at": "2026-05-01T11:11:24.634Z",
+  "session_ids": [
+    "ses_21cc387fbffeczrlMzVQTVxJsZ",
+    "ses_21ca5a2e9ffe5y21HB2zyrnoI4",
+    "ses_21ca57c3affeFDg7B0tSV9o2ym",
+    "ses_21ca53935ffe1Hr2cXwbAcVp6y",
+    "ses_21ca4ef5cffehbCeAT2mW5SPbB"
+  ],
+  "session_origins": {
+    "ses_21cc387fbffeczrlMzVQTVxJsZ": "direct",
+    "ses_21ca5a2e9ffe5y21HB2zyrnoI4": "appended",
+    "ses_21ca57c3affeFDg7B0tSV9o2ym": "appended",
+    "ses_21ca53935ffe1Hr2cXwbAcVp6y": "appended",
+    "ses_21ca4ef5cffehbCeAT2mW5SPbB": "appended"
+  },
+  "plan_name": "dependency-migration",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Wave 0: Capture Pre-Migration Visual Baselines",
+      "session_id": "ses_21cc27255ffecdqjESgM2JG7E0",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-01T11:17:21.066Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Wave 1: Upgrade Vite 5→7 + @vitejs/plugin-react 4→5",
+      "session_id": "ses_21cbd860effe8VTGB0wycH9u9D",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-01T11:23:00.739Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Wave 2: Upgrade React 18→19 + types + peer-dep overrides",
+      "session_id": "ses_21cb83981ffe0HAaep0jyOdEFB",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-01T11:26:38.696Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Wave 3: Tailwind 3→4 Migration (CSS-first config)",
+      "session_id": "ses_21cb4cdc2ffeVBKBPr58JSNSMq",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-05-01T11:33:28.463Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Wave 4: Test Infrastructure (Vitest + Full Playwright Suite)",
+      "session_id": "ses_21cae2ff4ffeFKUxneMjVNzjtS",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-01T11:41:01.917Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Wave 5: Node Runtime Bump (Docker + GitHub Actions)",
+      "session_id": "ses_21ca7d126ffeBRckGK26b71eOA",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-01T11:43:20.819Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_21ca53139ffeL5IIl3FT6miI5k",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-01T11:51:42.878Z"
+    }
+  }
+}
