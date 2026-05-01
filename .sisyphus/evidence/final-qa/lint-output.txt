@@ -1,4 +1,0 @@
-
-> slidedirc@0.0.0 lint
-> eslint . --rule no-undef:off --rule react/prop-types:off
-

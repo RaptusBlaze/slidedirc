@@ -1,6 +1,0 @@
-
-Running 1 test using 1 worker
-
-  ✓  1 [chromium] › tests/e2e/live-reload.spec.js:9:1 › live-reload polling works without StrictMode leaks (12.2s)
-
-  1 passed (13.4s)
