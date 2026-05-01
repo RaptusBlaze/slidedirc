@@ -2,7 +2,7 @@ import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle }
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 // axisMode (clockwise): 0=L→R, 1=T→B, 2=R→L, 3=B→T
-export function CompareViewer({ pair, hoverMode, axisMode }) {
+export function CompareViewer({ pair, hoverMode, axisMode, labelOffsets = {} }) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [spaceActive, setSpaceActive] = useState(false);
@@ -162,7 +162,10 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
 
   const slotALabel = reversed ? 'Edited' : 'Original';
   const slotBLabel = reversed ? 'Original' : 'Edited';
-  const slotBClass = `absolute ${portrait ? 'bottom-3 left-3' : 'top-3 right-3'} bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none`;
+  const slotAClass = `absolute top-3 ${labelOffsets.leftLabel ?? 'left-3'} bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none`;
+  const slotBPosition = portrait ? 'bottom-3 left-3' : `${labelOffsets.rightLabelTop ?? 'top-3'} ${labelOffsets.rightLabel ?? 'right-3'}`;
+  const slotBClass = `absolute ${slotBPosition} bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none`;
+  const showSlotBLabel = portrait || !labelOffsets.hideHorizontalRightLabel;
 
   // Cursor: crosshair-grab while pan mode active + zoomed, default otherwise
   const cursor = spaceActive && zoom > 1 ? 'grab' : 'default';
@@ -204,12 +207,14 @@ export function CompareViewer({ pair, hoverMode, axisMode }) {
       </div>
 
       {/* Fixed overlay labels */}
-      <div className="absolute top-3 left-3 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded pointer-events-none select-none">
+      <div className={slotAClass}>
         {slotALabel}
       </div>
-      <div className={slotBClass}>
-        {slotBLabel}
-      </div>
+      {showSlotBLabel && (
+        <div className={slotBClass}>
+          {slotBLabel}
+        </div>
+      )}
 
       {/* Zoom badge */}
       {zoom !== 1 && (

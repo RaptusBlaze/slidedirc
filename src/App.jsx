@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useFileStore } from './hooks/useFileStore';
 import { DropZone } from './components/DropZone';
-import { TopBar } from './components/TopBar';
+import { InfoOverlay } from './components/InfoOverlay';
+import { ActionBar } from './components/ActionBar';
 import { CompareViewer } from './components/CompareViewer';
 import { NavigationRibbon } from './components/NavigationRibbon';
 import { UnmatchedPanel } from './components/UnmatchedPanel';
@@ -24,6 +25,7 @@ export default function App() {
   const [hoverMode, setHoverMode] = useState(true);
   const [axisMode, setAxisMode] = useState(0); // 0=L→R, 1=T→B, 2=R→L, 3=B→T (clockwise)
   const [showHelp, setShowHelp] = useState(false);
+  const [infoExpanded, setInfoExpanded] = useState(true);
 
   const hasMatches = matches && matches.matched.length > 0;
   const currentPair = hasMatches ? matches.matched[currentIndex] : null;
@@ -38,6 +40,9 @@ export default function App() {
       }
       if (e.key === '?') {
         setShowHelp(h => !h);
+      }
+      if (e.key === 'i' || e.key === 'I') {
+        setInfoExpanded(v => !v);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -60,20 +65,30 @@ export default function App() {
   if (hasMatches) {
     return (
       <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">
-        <TopBar
-          currentPair={currentPair}
-          matches={matches}
-          onReset={reset}
-          hoverMode={hoverMode}
-          onHoverModeToggle={() => setHoverMode(m => !m)}
-          axisMode={axisMode}
-          onAxisCycle={() => setAxisMode(m => (m + 1) % 4)}
-          liveReload={liveReload}
-          onLiveReloadToggle={toggleLiveReload}
-          onHelpToggle={() => setShowHelp(h => !h)}
-        />
-        <div className="flex-1 overflow-hidden">
-          <CompareViewer pair={currentPair} hoverMode={hoverMode} axisMode={axisMode} />
+        <div className="flex-1 relative overflow-hidden">
+          <CompareViewer
+            pair={currentPair}
+            hoverMode={hoverMode}
+            axisMode={axisMode}
+            labelOffsets={{ leftLabel: 'left-20', hideHorizontalRightLabel: true }}
+          />
+          <InfoOverlay
+            currentPair={currentPair}
+            matches={matches}
+            expanded={infoExpanded}
+            onExpandedChange={setInfoExpanded}
+          />
+          <ActionBar
+            onReset={reset}
+            hoverMode={hoverMode}
+            onHoverModeToggle={() => setHoverMode(m => !m)}
+            axisMode={axisMode}
+            onAxisCycle={() => setAxisMode(m => (m + 1) % 4)}
+            liveReload={liveReload}
+            onLiveReloadToggle={toggleLiveReload}
+            onHelpToggle={() => setShowHelp(h => !h)}
+            sideLabel={axisMode >= 2 ? 'Original' : 'Edited'}
+          />
         </div>
         <NavigationRibbon
           matched={matches.matched}
