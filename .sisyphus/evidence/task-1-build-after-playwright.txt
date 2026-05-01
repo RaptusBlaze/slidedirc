@@ -1,0 +1,17 @@
+npm run build after Playwright install — task-1
+Date: 2026-05-01
+
+> slidedirc@0.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 59 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.47 kB │ gzip:  0.30 kB
+dist/assets/index-DqiSsiSW.css   14.04 kB │ gzip:  3.60 kB
+dist/assets/index-DI90iuDN.js   233.25 kB │ gzip: 73.09 kB
+✓ built in 1.00s
+
+Exit code: 0
