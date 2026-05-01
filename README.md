@@ -15,15 +15,16 @@ The problem: once I'm done in ComfyUI I had no comfortable way to revisit those 
 - **Slider compare view** — drag a handle to reveal original vs edited using `react-compare-slider`
 - **Thumbnail ribbon** — scroll through matched pairs; navigate with ← → arrow keys
 - **Unmatched files panel** — lists any files that couldn't be paired
-- **Dark UI** — Tailwind CSS v3 dark theme
+- **Dark UI** — Tailwind CSS v4 dark theme
 
 ## Stack
 
-- [React](https://github.com/facebook/react) 18 + [Vite](https://github.com/vitejs/vite)
+- [React](https://github.com/facebook/react) 19 + [Vite](https://github.com/vitejs/vite) 7
 - [react-compare-slider](https://github.com/nerdyman/react-compare-slider)
 - [react-dropzone](https://github.com/react-dropzone/react-dropzone)
 - [string-similarity](https://github.com/aceakash/string-similarity)
-- [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) v3
+- [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) v4 (CSS-first config)
+- [Vitest](https://github.com/vitest-dev/vitest) + [Playwright](https://github.com/microsoft/playwright) for unit + E2E tests
 
 ## Getting Started
 
@@ -33,6 +34,13 @@ npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173), drop your original folder on the left zone and edited folder on the right, then use the slider to compare.
+
+## Testing
+
+```bash
+npm test                 # Vitest unit tests (matchFiles algorithm)
+npm run test:e2e         # Playwright E2E tests (drop, keyboard, pan, live-reload, visual)
+```
 
 ## Deployment
 

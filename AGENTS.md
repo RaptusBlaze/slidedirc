@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Browser-only image-pair compare tool. React 18 + Vite + Tailwind v3, no backend, no router. Drop two folders → fuzzy-match by filename → slider compare. Scale: 13 source files, ~1070 LoC, depth ≤ 2.
+Browser-only image-pair compare tool. React 19 + Vite 7 + Tailwind v4 (CSS-first), no backend, no router. Drop two folders → fuzzy-match by filename → slider compare. Scale: 13 source files, ~1070 LoC, depth ≤ 2. Tests: Vitest (unit) + Playwright (E2E + visual).
 
 ## STRUCTURE
 
@@ -19,7 +19,7 @@ Browser-only image-pair compare tool. React 18 + Vite + Tailwind v3, no backend,
 │   └── components/              # 6 leaf components, no nesting
 ├── vite.config.js               # Reads VITE_BASE_URL env (GH Pages vs Docker/local)
 ├── nginx.conf                   # SPA fallback + immutable cache for hashed assets
-├── Dockerfile                   # Multi-stage: node:20-alpine → nginx:alpine
+├── Dockerfile                   # Multi-stage: node:22-alpine → nginx:alpine
 └── .github/workflows/deploy.yml # GH Pages: builds with VITE_BASE_URL=/slidedirc/
 ```
 
@@ -95,6 +95,8 @@ npm run dev              # Vite dev server → http://localhost:5173
 npm run build            # Production build → dist/
 npm run preview          # Preview built dist locally
 npm run lint             # ESLint flat config
+npm test                 # Vitest unit tests
+npm run test:e2e         # Playwright E2E + visual regression
 
 # Docker (self-host)
 docker compose up --build           # → http://localhost:8080
@@ -111,5 +113,5 @@ VITE_BASE_URL=/myrepo/ npm run build
 - **Image matching threshold = 0.6** (`matchFiles.js:22`). Lower = more false positives, especially on numeric suffixes (`img_001` ≈ `img_002` at high similarity).
 - **`react-compare-slider` `keyboardIncrement="0%"`** (`CompareViewer.jsx:198`) disables its built-in arrow-key handling so our App-level arrow nav wins.
 - **GitHub Pages deploy depends on `VITE_BASE_URL`**. Forking → either rename repo to `slidedirc` or update the env var in `.github/workflows/deploy.yml:37`.
-- **No tests.** No test runner configured. If adding tests, Vitest is the natural fit (Vite-native).
+- **No tests.** ~~No test runner configured.~~ Vitest (unit) + Playwright (E2E + visual) configured. See `tests/unit/` and `tests/e2e/`. Playwright runs `workers: 1, fullyParallel: false` — required because parallel workers race against the single dev-server when triggering react-dropzone via `setInputFiles`.
 - **`.sisyphus/`** is agent scratch; ignore.
