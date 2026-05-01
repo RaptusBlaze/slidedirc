@@ -62,7 +62,7 @@ App: currentPair = matches.matched[currentIndex]
 - **Plain JS + JSX** — no TypeScript despite `@types/react` being installed (IDE hints only).
 - **Tailwind inline classes only** — no CSS modules, no styled-components, no `className` constants. `index.css` contains only `@tailwind` directives.
 - **Single state hook** — all shared state lives in `useFileStore`. Component-local UI state (`zoom`, `hoverMode`, `showHelp`, etc.) stays in components. Don't introduce Redux/Zustand for current scope.
-- **ESLint flat config** — `eslint.config.js` (ESLint 9+), not `.eslintrc`. Run `npm run lint`.
+- **ESLint flat config** — `eslint.config.js` (ESLint 9+), not `.eslintrc`. Run `pnpm lint`.
 - **Dark theme only** — `bg-gray-950` / `text-white` baseline. Accents: green-400 (matched), yellow-400 (unmatched), amber-300 (orig diff), emerald-300 (edit diff), gray-600 (separators).
 - **File shape**: `{ name: string, url: blob-URL, lastModified: number }` — keep this shape across both ingestion paths.
 - **Conventional commits** in git history (`feat(scope): ...`, `fix: ...`, `docs: ...`, `chore: ...`).
@@ -90,13 +90,13 @@ App: currentPair = matches.matched[currentIndex]
 ## COMMANDS
 
 ```bash
-npm install              # First-time setup
-npm run dev              # Vite dev server → http://localhost:5173
-npm run build            # Production build → dist/
-npm run preview          # Preview built dist locally
-npm run lint             # ESLint flat config
-npm test                 # Vitest unit tests
-npm run test:e2e         # Playwright E2E + visual regression
+pnpm install             # First-time setup
+pnpm dev                 # Vite dev server → http://localhost:5173
+pnpm build               # Production build → dist/
+pnpm preview             # Preview built dist locally
+pnpm lint                # ESLint flat config
+pnpm test                # Vitest unit tests
+pnpm test:e2e            # Playwright E2E + visual regression
 
 # Docker (self-host)
 docker compose up --build           # → http://localhost:8080
@@ -104,7 +104,7 @@ docker build -t slidedirc . && docker run -p 8080:80 slidedirc
 
 # GitHub Pages: pushed to main → .github/workflows/deploy.yml builds with VITE_BASE_URL=/slidedirc/
 # To build for a different sub-path locally:
-VITE_BASE_URL=/myrepo/ npm run build
+VITE_BASE_URL=/myrepo/ pnpm build
 ```
 
 ## NOTES

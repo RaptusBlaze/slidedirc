@@ -29,8 +29,8 @@ The problem: once I'm done in ComfyUI I had no comfortable way to revisit those 
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173), drop your original folder on the left zone and edited folder on the right, then use the slider to compare.
@@ -38,8 +38,8 @@ Open [http://localhost:5173](http://localhost:5173), drop your original folder o
 ## Testing
 
 ```bash
-npm test                 # Vitest unit tests (matchFiles algorithm)
-npm run test:e2e         # Playwright E2E tests (drop, keyboard, pan, live-reload, visual)
+pnpm test                # Vitest unit tests (matchFiles algorithm)
+pnpm test:e2e            # Playwright E2E tests (drop, keyboard, pan, live-reload, visual)
 ```
 
 ## Deployment
