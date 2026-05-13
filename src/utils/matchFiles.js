@@ -4,6 +4,10 @@ function baseName(filename) {
   return filename.replace(/\.[^/.]+$/, '').toLowerCase();
 }
 
+function normalizedName(filename) {
+  return baseName(filename).replace(/_\d{8}t\d{6}_\d+_\d+$/, '');
+}
+
 export function matchFiles(filesA, filesB) {
   const matched = [];
   const unmatchedA = [];
@@ -13,12 +17,12 @@ export function matchFiles(filesA, filesB) {
     let idx = unmatchedB.findIndex(b => b.name.toLowerCase() === a.name.toLowerCase());
 
     if (idx === -1) {
-      idx = unmatchedB.findIndex(b => baseName(b.name) === baseName(a.name));
+      idx = unmatchedB.findIndex(b => normalizedName(b.name) === normalizedName(a.name));
     }
 
     if (idx === -1 && unmatchedB.length > 0) {
-      const names = unmatchedB.map(b => baseName(b.name));
-      const result = stringSimilarity.findBestMatch(baseName(a.name), names);
+      const names = unmatchedB.map(b => normalizedName(b.name));
+      const result = stringSimilarity.findBestMatch(normalizedName(a.name), names);
       if (result.bestMatch.rating >= 0.6) {
         idx = result.bestMatchIndex;
       }
