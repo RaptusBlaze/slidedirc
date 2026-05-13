@@ -41,13 +41,13 @@ describe('matchFiles', () => {
     expect(dissimilar.unmatchedB).toHaveLength(1)
   })
 
-  it('can still fuzzy-match names with added timestamp-like suffixes', () => {
+  it('does not treat timestamp-like suffix variants as deterministic matches', () => {
     const a = [makeFile('134901170_001.webp')]
     const b = [makeFile('134901170_001_20260512T225939_9_0.png')]
     const { matched, unmatchedA, unmatchedB } = matchFiles(a, b)
-    expect(matched).toHaveLength(1)
-    expect(unmatchedA).toHaveLength(0)
-    expect(unmatchedB).toHaveLength(0)
+    expect(matched).toHaveLength(0)
+    expect(unmatchedA).toHaveLength(1)
+    expect(unmatchedB).toHaveLength(1)
   })
 
   it('empty inputs', () => {
