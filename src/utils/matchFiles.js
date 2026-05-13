@@ -17,8 +17,8 @@ export function matchFiles(filesA, filesB) {
     }
 
     if (idx === -1 && unmatchedB.length > 0) {
-      const names = unmatchedB.map(b => b.name.toLowerCase());
-      const result = stringSimilarity.findBestMatch(a.name.toLowerCase(), names);
+      const names = unmatchedB.map(b => baseName(b.name));
+      const result = stringSimilarity.findBestMatch(baseName(a.name), names);
       if (result.bestMatch.rating >= 0.6) {
         idx = result.bestMatchIndex;
       }
