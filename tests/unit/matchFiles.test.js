@@ -41,7 +41,7 @@ describe('matchFiles', () => {
     expect(dissimilar.unmatchedB).toHaveLength(1)
   })
 
-  it('matches ComfyUI converted names with timestamp suffix and different extension', () => {
+  it('can still fuzzy-match names with added timestamp-like suffixes', () => {
     const a = [makeFile('134901170_001.webp')]
     const b = [makeFile('134901170_001_20260512T225939_9_0.png')]
     const { matched, unmatchedA, unmatchedB } = matchFiles(a, b)
